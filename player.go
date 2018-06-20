@@ -39,10 +39,7 @@ func Init() {
 
 // OnMount sets up player state.
 func (p *Player) OnMount() {
-
-	// Make a channel to control UI.
 	guiIsDone = make(chan struct{})
-
 	// Rendering loop.
 	go func() {
 		for range time.Tick(refresh * time.Millisecond) {
@@ -55,7 +52,6 @@ func (p *Player) OnMount() {
 			}
 		}
 	}()
-
 	// FFT loop.
 	go func() {
 		for range time.Tick(refresh * time.Millisecond) {
@@ -67,7 +63,6 @@ func (p *Player) OnMount() {
 			}
 		}
 	}()
-	//done <- struct{}{}
 }
 
 // Previous plays the previous song.
