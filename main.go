@@ -46,8 +46,7 @@ func main() {
 		}
 	}
 
-	playlist = play.New()
-	playlist.Init(files)
+	playlist = play.New(files)
 
 	go playlist.Start()
 

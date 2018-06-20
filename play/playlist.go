@@ -10,49 +10,44 @@ import (
 	id3 "github.com/mikkyang/id3-go"
 )
 
-type Playlist struct{}
+type Playlist struct {
+	playing int
+	files   []string
+	cont    chan struct{}
+	tag     Tag
+}
 
 type Tag struct {
 	Artist string
 	Title  string
 }
 
-var (
-	currentlyPlaying int
-	filesToBePlayed  []string
-	continuePlayList chan struct{}
-	tag              Tag
-)
-
-func (p *Playlist) Init(files []string) {
-	currentlyPlaying = 0
-	filesToBePlayed = files
-}
-
-func New() Playlist {
-	return Playlist{}
+func New(files []string) Playlist {
+	return Playlist{
+		files: files,
+	}
 }
 
 func (p *Playlist) Start() {
 	for {
 		// Set current file.
-		file := filesToBePlayed[currentlyPlaying]
+		file := p.files[p.playing]
 		// Read tags
-		setTags(file)
+		p.setTags(file)
 		play(file)
 
-		currentlyPlaying = currentlyPlaying + 1
+		p.playing = p.playing + 1
 
-		log.Println(currentlyPlaying)
+		log.Println(p.playing)
 
-		if currentlyPlaying >= len(filesToBePlayed) {
+		if p.playing >= len(p.files) {
 			Stop()
 			mu.Lock()
 			isPlaying = false
-			currentlyPlaying = len(filesToBePlayed) - 1
+			p.playing = len(p.files) - 1
 
-			continuePlayList = make(chan struct{})
-			<-continuePlayList
+			p.cont = make(chan struct{})
+			<-p.cont
 		}
 	}
 }
@@ -66,16 +61,16 @@ func (p *Playlist) TogglePause() {
 }
 
 func (p *Playlist) Back() {
-	currentlyPlaying = currentlyPlaying - 2
-	if currentlyPlaying < -1 {
-		currentlyPlaying = -1
+	p.playing = p.playing - 2
+	if p.playing < -1 {
+		p.playing = -1
 	}
 	p.Done()
 }
 
 func (p *Playlist) Next() {
-	if currentlyPlaying >= len(filesToBePlayed)-2 {
-		currentlyPlaying = len(filesToBePlayed) - 2
+	if p.playing >= len(p.files)-2 {
+		p.playing = len(p.files) - 2
 	}
 	p.Done()
 }
@@ -89,7 +84,7 @@ func (p *Playlist) GetSamples() *[][2]float64 {
 }
 
 func (p *Playlist) GetTags() Tag {
-	return tag
+	return p.tag
 }
 
 func play(file string) {
@@ -127,12 +122,12 @@ func play(file string) {
 	isPlaying = false
 }
 
-func setTags(file string) {
+func (p *Playlist) setTags(file string) {
 	// Read tags.
 	mp3File, _ := id3.Open(file)
 	defer mp3File.Close()
 
-	tag = Tag{
+	p.tag = Tag{
 		Artist: mp3File.Artist(),
 		Title:  mp3File.Title(),
 	}
