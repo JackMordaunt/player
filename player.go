@@ -8,7 +8,7 @@ import (
 	"github.com/ktye/fft"
 	"github.com/murlokswarm/app"
 
-	"github.com/grocid/mistlur/play"
+	"github.com/jackmordaunt/player/play"
 )
 
 func init() {

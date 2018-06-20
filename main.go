@@ -5,7 +5,7 @@ import (
 	"os"
 	"runtime"
 
-	"github.com/grocid/mistlur/play"
+	"github.com/jackmordaunt/player/play"
 
 	"github.com/murlokswarm/app"
 	"github.com/murlokswarm/app/drivers/mac"
