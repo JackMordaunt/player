@@ -13,8 +13,6 @@ import (
 
 func init() {
 	app.Import(&Player{})
-	fftc, _ = fft.New(fftSamples)
-	csamples = make([]complex128, fftSamples)
 }
 
 // Player is the component displaying Player.
@@ -22,7 +20,9 @@ type Player struct {
 	Bar [10]float64
 	Tag play.Tag
 
-	done chan struct{}
+	done     chan struct{}
+	fftc     fft.FFT
+	csamples []complex128
 }
 
 const (
@@ -30,13 +30,10 @@ const (
 	refresh    = 16
 )
 
-var (
-	fftc     fft.FFT
-	csamples []complex128
-)
-
 // OnMount sets up player state.
 func (p *Player) OnMount() {
+	p.fftc, _ = fft.New(fftSamples)
+	p.csamples = make([]complex128, fftSamples)
 	p.done = make(chan struct{})
 	// Trigger rendering, since modifying the bar values doesn't automatically
 	// trigger a re-render.
@@ -105,13 +102,13 @@ func (p *Player) computeBars() {
 	samples := *s
 	// Convert channel slices to complex128 (mono).
 	for i := 0; i < fftSamples; i++ {
-		csamples[i] = complex((samples[i][0] + samples[i][1]), 0)
+		p.csamples[i] = complex((samples[i][0] + samples[i][1]), 0)
 	}
-	fftc.Transform(csamples)
+	p.fftc.Transform(p.csamples)
 	for j := 0; j < len(p.Bar); j++ {
 		// Consider only half of the frequencies.
 		for i := 0; i < fftSamples/len(p.Bar)/2; i++ {
-			p.Bar[j] = 20 * (math.Log(1 + cmplx.Abs(csamples[i+j])))
+			p.Bar[j] = 20 * (math.Log(1 + cmplx.Abs(p.csamples[i+j])))
 		}
 	}
 }
