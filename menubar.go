@@ -26,14 +26,17 @@ func (m *MenuBar) Render() string {
 	`
 }
 
+// Next advances the playlist to the next song.
 func (m *MenuBar) Next() {
 	playlist.Next()
 }
 
+// Back advances the playlist to the previous song.
 func (m *MenuBar) Back() {
 	playlist.Back()
 }
 
+// TogglePause toggles playback.
 func (m *MenuBar) TogglePause() {
 	playlist.TogglePause()
 }
