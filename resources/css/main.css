@@ -1,0 +1,110 @@
+* {
+    color: #222;
+    font-family: -apple-system;
+    font-weight: 300;
+    -webkit-user-select: none;
+    pointer-events: default;
+    cursor: default;
+}
+
+@keyframes fadein {
+    from {
+        opacity:0;
+    }
+    to {
+        opacity:1;
+    }
+}
+
+@-webkit-keyframes fadein {
+    from {
+        opacity:0;
+    }
+    to {
+        opacity:1;
+    }
+}
+
+.graph {
+    width: 100%;
+    height: 80px;
+    vertical-align: bottom;
+}
+
+.bar {
+    width: 4px;
+    margin: 1px;
+    display: inline-block;
+    vertical-align: bottom;
+    background-color: #2be;
+    max-height: 70px;
+    height: 100px;
+}
+
+.center {
+    padding: 20px 0;
+    text-align: center;
+    animation: fadein 1s;
+    -moz-animation: fadein 1s;
+    -webkit-animation: fadein 1s;
+    -o-animation: fadein 1s;
+}
+
+.button {
+    background: rgba(30, 34, 37, 0.0);
+    transition: background 0.2s;
+    background-size: 20px;
+    background-repeat: no-repeat;
+    background-position: center center;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+    border: none;
+    color: white;
+    padding: 20px;
+    width: 32px;
+    height: 32px;
+    pointer-events: auto;
+    -webkit-user-select: auto;
+}
+
+.button:hover {
+    background: rgba(255, 255, 255, 0.1);
+    background-size: 20px;
+    background-repeat: no-repeat;
+    background-position: center center;
+    transition: background 0.2s;
+    pointer-events: auto;
+    -webkit-user-select: auto;
+}
+
+.button:active {
+    background: rgba(255, 255, 255, 0.3);
+    background-size: 20px;
+    background-repeat: no-repeat;
+    background-position: center center;
+    border-radius: 5px;
+    border: none;
+    color: white;
+    padding: 20px;
+    width: 32px;
+    height: 32px;
+    pointer-events: auto;
+    -webkit-user-select: auto;
+}
+
+.button.back {
+    background-image:url(../buttons/back_dark.png);
+}
+
+.button.play {
+    background-image:url(../buttons/play_dark.png);
+}
+
+.button.pause {
+    background-image:url(../buttons/pause_dark.png);
+}
+
+.button.next {
+    background-image:url(../buttons/next_dark.png);
+}
