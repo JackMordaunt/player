@@ -15,7 +15,7 @@ func init() {
 	app.Import(&Player{})
 }
 
-// Player is the component disPlaying Player.
+// Player is the component displaying Player.
 type Player struct {
 	Bar [10]float64
 	Tag play.Tag
@@ -40,7 +40,8 @@ func Init() {
 // OnMount sets up player state.
 func (p *Player) OnMount() {
 	guiIsDone = make(chan struct{})
-	// Rendering loop.
+	// Trigger rendering, since modifying the bar values doesn't automatically
+	// trigger a re-render.
 	go func() {
 		for range time.Tick(refresh * time.Millisecond) {
 			select {
@@ -51,7 +52,6 @@ func (p *Player) OnMount() {
 			}
 		}
 	}()
-	// FFT loop.
 	go func() {
 		for range time.Tick(refresh * time.Millisecond) {
 			select {
@@ -88,6 +88,7 @@ func (p *Player) ClearBars() {
 
 // OnDismount stops the playback.
 func (p *Player) OnDismount() {
+	guiIsDone <- struct{}{}
 	guiIsDone <- struct{}{}
 	playlist.Done()
 }
