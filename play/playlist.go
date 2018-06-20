@@ -8,6 +8,7 @@ import (
 	"github.com/faiface/beep"
 	"github.com/faiface/beep/mp3"
 	id3 "github.com/mikkyang/id3-go"
+	"github.com/pkg/errors"
 )
 
 type Playlist struct {
@@ -30,34 +31,23 @@ func New(files []string) Playlist {
 
 func (p *Playlist) Start() {
 	for {
-		// Set current file.
 		file := p.files[p.playing]
-		// Read tags
-		p.setTags(file)
-		play(file)
-
+		if err := p.setTags(file); err != nil {
+			// TODO log err.
+		}
+		if err := play(file); err != nil {
+			// TODO log err.
+		}
 		p.playing = p.playing + 1
-
 		log.Println(p.playing)
-
 		if p.playing >= len(p.files) {
-			Stop()
-			mu.Lock()
-			isPlaying = false
-			p.playing = len(p.files) - 1
-
-			p.cont = make(chan struct{})
-			<-p.cont
+			p.playing = 0
 		}
 	}
 }
 
 func (p *Playlist) Done() {
 	done <- struct{}{}
-}
-
-func (p *Playlist) TogglePause() {
-	togglePause()
 }
 
 func (p *Playlist) Back() {
@@ -87,26 +77,16 @@ func (p *Playlist) GetTags() Tag {
 	return p.tag
 }
 
-func play(file string) {
-	// Read music file.
+func play(file string) error {
 	f, err := os.Open(file)
-
-	// Skip if error...
 	if err != nil {
-		return
+		return err
 	}
-
-	// Decode the data.
 	s, format, err := mp3.Decode(f)
-
 	if err != nil {
-		return
+		return errors.Wrap(err, "decoding mp3")
 	}
-
-	// Make a channel to communicate when done.
 	done = make(chan struct{})
-
-	// Start playing...
 	InitPlayer(
 		format.SampleRate,
 		format.SampleRate.N(time.Second/10),
@@ -115,20 +95,21 @@ func play(file string) {
 		func() {
 			close(done)
 		})))
-
-	// Wait for done signal, so that the player
-	// has finished crunching the file.
 	<-done
 	isPlaying = false
+	return nil
 }
 
-func (p *Playlist) setTags(file string) {
+func (p *Playlist) setTags(file string) error {
 	// Read tags.
-	mp3File, _ := id3.Open(file)
-	defer mp3File.Close()
-
+	mp3File, err := id3.Open(file)
+	if err != nil {
+		return err
+	}
 	p.tag = Tag{
 		Artist: mp3File.Artist(),
 		Title:  mp3File.Title(),
 	}
+	mp3File.Close()
+	return nil
 }
