@@ -23,11 +23,8 @@ type Player struct {
 }
 
 const (
-	// Let us make it less computationally invasive
 	FFTSamples = 1024
-	// This is fast enough for the eye, no? Maybe a little choppy
-	// but that is a trade-off.
-	RefreshEveryMillisec = 16
+	refresh    = 16
 
 	BtnPlay  = "play"
 	BtnPause = "pause"
@@ -44,6 +41,7 @@ func Init() {
 	csamples = make([]complex128, FFTSamples)
 }
 
+// OnMount sets up player state.
 func (p *Player) OnMount() {
 	p.PlayBtn = BtnPause
 
@@ -52,8 +50,7 @@ func (p *Player) OnMount() {
 
 	// Rendering loop.
 	go func() {
-		c := time.Tick(RefreshEveryMillisec * time.Millisecond)
-		for _ = range c {
+		for range time.Tick(refresh * time.Millisecond) {
 			select {
 			default:
 				// Render pl0x.
@@ -66,8 +63,7 @@ func (p *Player) OnMount() {
 
 	// FFT loop.
 	go func() {
-		c := time.Tick(RefreshEveryMillisec * time.Millisecond)
-		for _ = range c {
+		for range time.Tick(refresh * time.Millisecond) {
 			select {
 			default:
 				if !playlist.IsPlaying() {
@@ -100,30 +96,35 @@ func (p *Player) OnMount() {
 	//done <- struct{}{}
 }
 
-func (p *Player) BackBtn() {
+// Previous plays the previous song.
+func (p *Player) Previous() {
 	playlist.Back()
 }
 
-func (p *Player) NextBtn() {
+// Next plays the next song.
+func (p *Player) Next() {
 	playlist.Next()
 }
 
-func (p *Player) TogglePlayBtn() {
+// TogglePlayback pause/play.
+func (p *Player) TogglePlayback() {
 	playlist.TogglePause()
 }
 
+// ClearBars sets all bars to their initial state.
 func (p *Player) ClearBars() {
 	for j := 0; j < len(p.Bar); j++ {
 		p.Bar[j] = 0
 	}
 }
 
+// OnDismount stops the playback.
 func (p *Player) OnDismount() {
-	// Tell UI it is done here.
 	guiIsDone <- struct{}{}
 	playlist.Done()
 }
 
+// Render the player.
 func (p *Player) Render() string {
 	if playlist.IsPlaying() {
 		p.PlayBtn = BtnPause
@@ -145,9 +146,9 @@ func (p *Player) Render() string {
 	<h1>{{ .Tag.Artist }} </h1>
 	<h2>{{ .Tag.Title }} </h2>
 	<div>
-		<button class="button back" onclick="BackBtn"></button>
-		<button class="button {{.PlayBtn}}" onclick="TogglePlayBtn"></button>
-		<button class="button next" onclick="NextBtn"></button>         
+		<button class="button back" onclick="Previous"></button>
+		<button class="button {{.PlayBtn}}" onclick="TogglePlayback"></button>
+		<button class="button next" onclick="Next"></button>         
 	</div>
 </div>
 `
