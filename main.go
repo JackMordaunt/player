@@ -22,9 +22,6 @@ func main() {
 		return
 	}
 
-	// Initialize FFT.
-	Init()
-
 	playlist = play.New()
 	playlist.Init(os.Args[1:])
 

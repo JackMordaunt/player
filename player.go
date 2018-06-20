@@ -13,12 +13,16 @@ import (
 
 func init() {
 	app.Import(&Player{})
+	fftc, _ = fft.New(fftSamples)
+	csamples = make([]complex128, fftSamples)
 }
 
 // Player is the component displaying Player.
 type Player struct {
 	Bar [10]float64
 	Tag play.Tag
+
+	done chan struct{}
 }
 
 const (
@@ -27,19 +31,13 @@ const (
 )
 
 var (
-	guiIsDone chan struct{}
-	fftc      fft.FFT
-	csamples  []complex128
+	fftc     fft.FFT
+	csamples []complex128
 )
-
-func Init() {
-	fftc, _ = fft.New(fftSamples)
-	csamples = make([]complex128, fftSamples)
-}
 
 // OnMount sets up player state.
 func (p *Player) OnMount() {
-	guiIsDone = make(chan struct{})
+	p.done = make(chan struct{})
 	// Trigger rendering, since modifying the bar values doesn't automatically
 	// trigger a re-render.
 	go func() {
@@ -47,7 +45,7 @@ func (p *Player) OnMount() {
 			select {
 			default:
 				app.Render(p)
-			case <-guiIsDone:
+			case <-p.done:
 				return
 			}
 		}
@@ -57,7 +55,7 @@ func (p *Player) OnMount() {
 			select {
 			default:
 				p.computeBars()
-			case <-guiIsDone:
+			case <-p.done:
 				return
 			}
 		}
@@ -88,8 +86,8 @@ func (p *Player) ClearBars() {
 
 // OnDismount stops the playback.
 func (p *Player) OnDismount() {
-	guiIsDone <- struct{}{}
-	guiIsDone <- struct{}{}
+	p.done <- struct{}{}
+	p.done <- struct{}{}
 	playlist.Done()
 }
 
