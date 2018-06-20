@@ -49,9 +49,7 @@ func main() {
 	playlist = play.New()
 	playlist.Init(files)
 
-	go func() {
-		playlist.Start()
-	}()
+	go playlist.Start()
 
 	app.Run(&mac.Driver{
 		OnRun: func() {
