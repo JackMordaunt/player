@@ -84,7 +84,6 @@ func (p *Player) ClearBars() {
 // OnDismount stops the playback.
 func (p *Player) OnDismount() {
 	p.done <- struct{}{}
-	p.done <- struct{}{}
 	playlist.Done()
 }
 
