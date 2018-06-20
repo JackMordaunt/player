@@ -45,7 +45,6 @@ func (p *Player) OnMount() {
 		for range time.Tick(refresh * time.Millisecond) {
 			select {
 			default:
-				// Render pl0x.
 				app.Render(p)
 			case <-guiIsDone:
 				return

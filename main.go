@@ -52,7 +52,6 @@ func newMainWindow() {
 		Mac: app.MacWindowConfig{
 			BackgroundVibrancy: app.VibeDark,
 		},
-		// TitlebarHidden: true,
 		DefaultURL: "/Player",
 		OnClose: func() bool {
 			playlist.Done()
