@@ -1,8 +1,10 @@
 package main
 
 import (
+	"io/ioutil"
 	"log"
 	"os"
+	"path/filepath"
 	"runtime"
 
 	"github.com/jackmordaunt/player/play"
@@ -22,8 +24,30 @@ func main() {
 		return
 	}
 
+	var files []string
+	for _, path := range os.Args[1:] {
+		fi, err := os.Stat(path)
+		if err != nil {
+			panic(err)
+		}
+		if fi.IsDir() {
+			entries, err := ioutil.ReadDir(path)
+			if err != nil {
+				panic(err)
+			}
+			for _, e := range entries {
+				if e.IsDir() {
+					continue
+				}
+				files = append(files, filepath.Join(path, e.Name()))
+			}
+		} else {
+			files = append(files, path)
+		}
+	}
+
 	playlist = play.New()
-	playlist.Init(os.Args[1:])
+	playlist.Init(files)
 
 	go func() {
 		playlist.Start()
