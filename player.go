@@ -61,28 +61,7 @@ func (p *Player) OnMount() {
 		for range time.Tick(refresh * time.Millisecond) {
 			select {
 			default:
-				if !playlist.IsPlaying() {
-					p.ClearBars()
-					continue
-				}
-
-				s := playlist.GetSamples()
-				samples := *s
-				// Convert channel slices to complex128 (mono).
-				for i := 0; i < fftSamples; i++ {
-					csamples[i] = complex((samples[i][0] + samples[i][1]), 0)
-				}
-				// An FFT walks into...
-				fftc.Transform(csamples)
-				// ...a bar...
-				for j := 0; j < len(p.Bar); j++ {
-					// Consider only half of the frequencies.
-					for i := 0; i < fftSamples/len(p.Bar)/2; i++ {
-						p.Bar[j] = 20 * (math.Log(1 + cmplx.Abs(csamples[i+j])))
-					}
-				}
-				// ...and the whole scene unfolds with tedious inevitability.
-				// #complexjoke
+				p.computeBars()
 			case <-guiIsDone:
 				return
 			}
@@ -122,6 +101,26 @@ func (p *Player) OnDismount() {
 // IsPlaying reports whether the player is actively playing a song.
 func (p *Player) IsPlaying() bool {
 	return playlist.IsPlaying()
+}
+
+func (p *Player) computeBars() {
+	if !playlist.IsPlaying() {
+		p.ClearBars()
+		return
+	}
+	s := playlist.GetSamples()
+	samples := *s
+	// Convert channel slices to complex128 (mono).
+	for i := 0; i < fftSamples; i++ {
+		csamples[i] = complex((samples[i][0] + samples[i][1]), 0)
+	}
+	fftc.Transform(csamples)
+	for j := 0; j < len(p.Bar); j++ {
+		// Consider only half of the frequencies.
+		for i := 0; i < fftSamples/len(p.Bar)/2; i++ {
+			p.Bar[j] = 20 * (math.Log(1 + cmplx.Abs(csamples[i+j])))
+		}
+	}
 }
 
 // Render the player.
