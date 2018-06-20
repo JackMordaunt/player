@@ -108,8 +108,8 @@ func (p *Player) TogglePlayback() {
 
 // ClearBars sets all bars to their initial state.
 func (p *Player) ClearBars() {
-	for j := 0; j < len(p.Bar); j++ {
-		p.Bar[j] = 0
+	for ii := 0; ii < len(p.Bar); ii++ {
+		p.Bar[ii] = 1
 	}
 }
 
