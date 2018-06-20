@@ -17,17 +17,13 @@ func init() {
 
 // Player is the component disPlaying Player.
 type Player struct {
-	Bar     [10]float64
-	PlayBtn string
-	Tag     play.Tag
+	Bar [10]float64
+	Tag play.Tag
 }
 
 const (
-	FFTSamples = 1024
+	fftSamples = 1024
 	refresh    = 16
-
-	BtnPlay  = "play"
-	BtnPause = "pause"
 )
 
 var (
@@ -37,13 +33,12 @@ var (
 )
 
 func Init() {
-	fftc, _ = fft.New(FFTSamples)
-	csamples = make([]complex128, FFTSamples)
+	fftc, _ = fft.New(fftSamples)
+	csamples = make([]complex128, fftSamples)
 }
 
 // OnMount sets up player state.
 func (p *Player) OnMount() {
-	p.PlayBtn = BtnPause
 
 	// Make a channel to control UI.
 	guiIsDone = make(chan struct{})
@@ -74,7 +69,7 @@ func (p *Player) OnMount() {
 				s := playlist.GetSamples()
 				samples := *s
 				// Convert channel slices to complex128 (mono).
-				for i := 0; i < FFTSamples; i++ {
+				for i := 0; i < fftSamples; i++ {
 					csamples[i] = complex((samples[i][0] + samples[i][1]), 0)
 				}
 				// An FFT walks into...
@@ -82,7 +77,7 @@ func (p *Player) OnMount() {
 				// ...a bar...
 				for j := 0; j < len(p.Bar); j++ {
 					// Consider only half of the frequencies.
-					for i := 0; i < FFTSamples/len(p.Bar)/2; i++ {
+					for i := 0; i < fftSamples/len(p.Bar)/2; i++ {
 						p.Bar[j] = 20 * (math.Log(1 + cmplx.Abs(csamples[i+j])))
 					}
 				}
@@ -124,13 +119,13 @@ func (p *Player) OnDismount() {
 	playlist.Done()
 }
 
+// IsPlaying reports whether the player is actively playing a song.
+func (p *Player) IsPlaying() bool {
+	return playlist.IsPlaying()
+}
+
 // Render the player.
 func (p *Player) Render() string {
-	if playlist.IsPlaying() {
-		p.PlayBtn = BtnPause
-	} else {
-		p.PlayBtn = BtnPlay
-	}
 	p.Tag = playlist.GetTags()
 	return `
 <div class="center">
@@ -147,7 +142,7 @@ func (p *Player) Render() string {
 	<h2>{{ .Tag.Title }} </h2>
 	<div>
 		<button class="button back" onclick="Previous"></button>
-		<button class="button {{.PlayBtn}}" onclick="TogglePlayback"></button>
+		<button class="button {{if .IsPlaying}}pause{{else}}play{{end}}" onclick="TogglePlayback"></button>
 		<button class="button next" onclick="Next"></button>         
 	</div>
 </div>
