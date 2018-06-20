@@ -1,9 +1,7 @@
 package main
 
 // MenuBar is the component that define the menu bar.
-type MenuBar struct {
-	Field string
-}
+type MenuBar app.ZeroCompo
 
 // Render returns return the HTML describing the menu bar.
 func (m *MenuBar) Render() string {
