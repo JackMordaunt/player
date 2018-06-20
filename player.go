@@ -11,6 +11,10 @@ import (
 	"github.com/grocid/mistlur/play"
 )
 
+func init() {
+	app.Import(&Player{})
+}
+
 // Player is the component disPlaying Player.
 type Player struct {
 	Bar     [10]float64

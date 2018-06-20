@@ -32,8 +32,6 @@ func main() {
 		playlist.Start()
 	}()
 
-	app.Import(&MenuBar{})
-	app.Import(&Player{})
 	app.Run(&mac.Driver{
 		OnRun: func() {
 			newMainWindow()

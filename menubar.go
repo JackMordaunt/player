@@ -1,5 +1,11 @@
 package main
 
+import "github.com/murlokswarm/app"
+
+func init() {
+	app.Import(&MenuBar{})
+}
+
 // MenuBar is the component that define the menu bar.
 type MenuBar app.ZeroCompo
 
