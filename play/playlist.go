@@ -20,6 +20,7 @@ type Playlist struct {
 	files   []string
 	cont    chan struct{}
 	tag     Tag
+	log     *log.Logger
 }
 
 // Tag contains metadata about the song.
