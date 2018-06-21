@@ -56,10 +56,12 @@ func (p *Playlist) run() {
 	}
 }
 
+// Done signals that we are finished with the currently playing song.
 func (p *Playlist) Done() {
 	done <- struct{}{}
 }
 
+// Back plays the previous song.
 func (p *Playlist) Back() {
 	p.playing = p.playing - 2
 	if p.playing < -1 {
@@ -68,6 +70,7 @@ func (p *Playlist) Back() {
 	p.Done()
 }
 
+// Next plays the next song.
 func (p *Playlist) Next() {
 	if p.playing >= len(p.files)-2 {
 		p.playing = len(p.files) - 2
@@ -75,14 +78,17 @@ func (p *Playlist) Next() {
 	p.Done()
 }
 
+// IsPlaying reports the status of the Playlist.
 func (p *Playlist) IsPlaying() bool {
 	return IsPlaying()
 }
 
+// GetSamples returns the samples.
 func (p *Playlist) GetSamples() *[][2]float64 {
 	return &samples
 }
 
+// GetTags gets the tag for the song.
 func (p *Playlist) GetTags() Tag {
 	return p.tag
 }
