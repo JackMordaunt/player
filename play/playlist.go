@@ -5,7 +5,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/faiface/beep"
 	"github.com/faiface/beep/mp3"
 	id3 "github.com/mikkyang/id3-go"
 	"github.com/pkg/errors"
@@ -59,7 +58,7 @@ func (p *Playlist) run() {
 
 // Done signals that we are finished with the currently playing song.
 func (p *Playlist) Done() {
-	done <- struct{}{}
+	p.Player.Done()
 }
 
 // Back plays the previous song.
@@ -79,14 +78,16 @@ func (p *Playlist) Next() {
 	p.Done()
 }
 
-// IsPlaying reports the status of the Playlist.
 func (p *Playlist) IsPlaying() bool {
-	return IsPlaying()
+	if p.Player == nil {
+		return false
+	}
+	return p.Player.IsPlaying()
 }
 
 // GetSamples returns the samples.
 func (p *Playlist) GetSamples() [][2]float64 {
-	return samples
+	return p.Player.samples
 }
 
 // GetTags gets the tag for the song.
@@ -94,30 +95,24 @@ func (p *Playlist) GetTags() Tag {
 	return p.tag
 }
 
-func play(file string) error {
+func (p *Playlist) play(file string) error {
 	f, err := os.Open(file)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "opening audio file")
 	}
 	s, format, err := mp3.Decode(f)
 	if err != nil {
 		return errors.Wrap(err, "decoding mp3")
 	}
-	done = make(chan struct{})
-	InitPlayer(
+	player, err := NewPlayer(
 		format.SampleRate,
 		format.SampleRate.N(time.Second/10),
 	)
-	Play(beep.Seq(s, beep.Callback(
-		func() {
-			// This causes <-done to return when the song finishes.
-			// Other <-done is coming from some external source to
-			// end early.
-			close(done)
-		})))
-	// waits on done signal which can be used to return early(er) than the
-	// the song. If the song completes it signals done.
-	<-done
+	if err != nil {
+		return errors.Wrap(err, "initialising player")
+	}
+	p.Player = player
+	p.Player.Play(s)
 	return nil
 }
 
@@ -131,6 +126,5 @@ func (p *Playlist) setTags(file string) error {
 		Artist: mp3File.Artist(),
 		Title:  mp3File.Title(),
 	}
-	mp3File.Close()
-	return nil
+	return mp3File.Close()
 }
