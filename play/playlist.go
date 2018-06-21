@@ -32,6 +32,7 @@ type Tag struct {
 func New(files []string) *Playlist {
 	p := &Playlist{
 		files: files,
+		log:   log.New(os.Stdout, "[playlist]", log.LstdFlags),
 	}
 	go p.run()
 	return p
@@ -42,10 +43,10 @@ func (p *Playlist) run() {
 	for {
 		file := p.files[p.playing]
 		if err := p.setTags(file); err != nil {
-			// TODO log err.
+			p.log.Printf("setting tag: %v", err)
 		}
-		if err := play(file); err != nil {
-			// TODO log err.
+		if err := p.play(file); err != nil {
+			p.log.Printf("playing file %s: %v", file, err)
 		}
 		p.playing = p.playing + 1
 		log.Println(p.playing)
