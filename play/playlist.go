@@ -38,7 +38,6 @@ func New(files []string) *Playlist {
 }
 
 // run is the core play loop that plays each audio file in the list.
-// TODO Could probably have a better name like "Loop", "Run", or "Play"...
 func (p *Playlist) run() {
 	for {
 		file := p.files[p.playing]
