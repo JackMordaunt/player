@@ -11,7 +11,6 @@ import (
 )
 
 // Playlist manages the playback of audio files.
-// TODO Hook up Playlist to Player object instead of using global state.
 type Playlist struct {
 	*Player
 
@@ -42,7 +41,7 @@ func New(files []string) *Playlist {
 func (p *Playlist) run() {
 	for {
 		file := p.files[p.playing]
-		if err := p.setTags(file); err != nil {
+		if err := p.setTag(file); err != nil {
 			p.log.Printf("setting tag: %v", err)
 		}
 		if err := p.play(file); err != nil {
@@ -78,6 +77,7 @@ func (p *Playlist) Next() {
 	p.Done()
 }
 
+// IsPlaying reports the status of the Player.
 func (p *Playlist) IsPlaying() bool {
 	if p.Player == nil {
 		return false
@@ -116,8 +116,7 @@ func (p *Playlist) play(file string) error {
 	return nil
 }
 
-func (p *Playlist) setTags(file string) error {
-	// Read tags.
+func (p *Playlist) setTag(file string) error {
 	mp3File, err := id3.Open(file)
 	if err != nil {
 		return err

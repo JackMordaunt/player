@@ -1,7 +1,6 @@
 package play
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"sync"
@@ -52,9 +51,7 @@ func (p *Player) Play(s beep.Streamer) {
 		p.Close()
 	})))
 	p.Unlock()
-	fmt.Printf("waiting for mixer.Play\n")
 	p.wait()
-	fmt.Printf("done\n")
 }
 
 // Stop playing by emptying the mixer.
@@ -67,7 +64,6 @@ func (p *Player) Stop() {
 
 // Close the player.
 func (p *Player) Close() {
-	fmt.Printf("closing\n")
 	close(p.done)
 	p.player.Close()
 }
@@ -93,7 +89,6 @@ func (p *Player) TogglePause() {
 
 // Done signals that we are finished with the currently playing song.
 func (p *Player) Done() {
-	fmt.Printf("done\n")
 	p.done <- struct{}{}
 }
 
@@ -112,7 +107,6 @@ func (p *Player) run() {
 }
 
 func (p *Player) update() error {
-	// fmt.Printf("update\n")
 	p.mixer.Stream(p.samples)
 	for ii := range p.samples {
 		for c := range p.samples[ii] {
