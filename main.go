@@ -62,7 +62,7 @@ func main() {
 
 func newMainWindow() {
 	app.NewWindow(app.WindowConfig{
-		Title:  "player",
+		Title:  "Player",
 		Width:  400,
 		Height: 400,
 		Mac: app.MacWindowConfig{
