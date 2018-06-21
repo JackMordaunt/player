@@ -97,8 +97,7 @@ func (p *Player) computeBars() {
 		p.ClearBars()
 		return
 	}
-	s := playlist.GetSamples()
-	samples := *s
+	samples := playlist.GetSamples()
 	// Convert channel slices to complex128 (mono).
 	for i := 0; i < fftSamples; i++ {
 		p.csamples[i] = complex((samples[i][0] + samples[i][1]), 0)

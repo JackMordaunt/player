@@ -83,8 +83,8 @@ func (p *Playlist) IsPlaying() bool {
 }
 
 // GetSamples returns the samples.
-func (p *Playlist) GetSamples() *[][2]float64 {
-	return &samples
+func (p *Playlist) GetSamples() [][2]float64 {
+	return samples
 }
 
 // GetTags gets the tag for the song.
