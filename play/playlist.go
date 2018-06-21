@@ -11,25 +11,35 @@ import (
 	"github.com/pkg/errors"
 )
 
+// Playlist manages the playback of audio files.
+// TODO Hook up Playlist to Player object instead of using global state.
 type Playlist struct {
+	*Player
+
 	playing int
 	files   []string
 	cont    chan struct{}
 	tag     Tag
 }
 
+// Tag contains metadata about the song.
 type Tag struct {
 	Artist string
 	Title  string
 }
 
-func New(files []string) Playlist {
-	return Playlist{
+// New creates a new Playlist.
+func New(files []string) *Playlist {
+	p := &Playlist{
 		files: files,
 	}
+	go p.run()
+	return p
 }
 
-func (p *Playlist) Start() {
+// run is the core play loop that plays each audio file in the list.
+// TODO Could probably have a better name like "Loop", "Run", or "Play"...
+func (p *Playlist) run() {
 	for {
 		file := p.files[p.playing]
 		if err := p.setTags(file); err != nil {
@@ -93,10 +103,14 @@ func play(file string) error {
 	)
 	Play(beep.Seq(s, beep.Callback(
 		func() {
+			// This causes <-done to return when the song finishes.
+			// Other <-done is coming from some external source to
+			// end early.
 			close(done)
 		})))
+	// waits on done signal which can be used to return early(er) than the
+	// the song. If the song completes it signals done.
 	<-done
-	isPlaying = false
 	return nil
 }
 

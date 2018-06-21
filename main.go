@@ -14,7 +14,7 @@ import (
 )
 
 var (
-	playlist play.Playlist
+	playlist *play.Playlist
 )
 
 func main() {
@@ -47,8 +47,6 @@ func main() {
 	}
 
 	playlist = play.New(files)
-
-	go playlist.Start()
 
 	app.Run(&mac.Driver{
 		OnRun: func() {
