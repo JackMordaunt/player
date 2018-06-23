@@ -10,8 +10,8 @@ import (
 	"github.com/pkg/errors"
 )
 
-// Player can audio streams.
-type Player struct {
+// PlayerOld can audio streams.
+type PlayerOld struct {
 	*sync.Mutex
 	mixer     beep.Mixer
 	samples   [][2]float64
@@ -24,12 +24,12 @@ type Player struct {
 }
 
 // NewPlayer initialises a Player.
-func NewPlayer(sampleRate beep.SampleRate, bufferSize int) (*Player, error) {
+func NewPlayer(sampleRate beep.SampleRate, bufferSize int) (*PlayerOld, error) {
 	speaker, err := oto.NewPlayer(int(sampleRate), 2, 2, bufferSize*4)
 	if err != nil {
 		return nil, errors.Wrap(err, "initialising speaker")
 	}
-	player := &Player{
+	player := &PlayerOld{
 		Mutex:    &sync.Mutex{},
 		mixer:    beep.Mixer{},
 		samples:  make([][2]float64, bufferSize),
@@ -44,7 +44,7 @@ func NewPlayer(sampleRate beep.SampleRate, bufferSize int) (*Player, error) {
 }
 
 // Play starts playing the provided streamers.
-func (p *Player) Play(s beep.Streamer) {
+func (p *PlayerOld) Play(s beep.Streamer) {
 	p.Lock()
 	p.isPlaying = true
 	p.mixer.Play(beep.Seq(s, beep.Callback(func() {
@@ -55,7 +55,7 @@ func (p *Player) Play(s beep.Streamer) {
 }
 
 // Stop playing by emptying the mixer.
-func (p *Player) Stop() {
+func (p *PlayerOld) Stop() {
 	p.Lock()
 	p.mixer = beep.Mixer{}
 	p.isPlaying = false
@@ -63,22 +63,22 @@ func (p *Player) Stop() {
 }
 
 // Close the player.
-func (p *Player) Close() {
+func (p *PlayerOld) Close() {
 	close(p.done)
 	p.player.Close()
 }
 
-func (p *Player) wait() {
+func (p *PlayerOld) wait() {
 	<-p.done
 }
 
 // IsPlaying reports whether the player is playing or not.
-func (p *Player) IsPlaying() bool {
+func (p *PlayerOld) IsPlaying() bool {
 	return p.isPlaying
 }
 
 // TogglePause toggles playback.
-func (p *Player) TogglePause() {
+func (p *PlayerOld) TogglePause() {
 	if p.isPlaying {
 		p.Lock()
 	} else {
@@ -88,12 +88,12 @@ func (p *Player) TogglePause() {
 }
 
 // Done signals that we are finished with the currently playing song.
-func (p *Player) Done() {
+func (p *PlayerOld) Done() {
 	p.done <- struct{}{}
 }
 
 // run the player.
-func (p *Player) run() {
+func (p *PlayerOld) run() {
 	for {
 		select {
 		default:
@@ -106,7 +106,7 @@ func (p *Player) run() {
 	}
 }
 
-func (p *Player) update() error {
+func (p *PlayerOld) update() error {
 	p.mixer.Stream(p.samples)
 	for ii := range p.samples {
 		for c := range p.samples[ii] {
