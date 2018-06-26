@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -48,7 +49,7 @@ func main() {
 
 	playlist = play.New(files)
 
-	app.Run(&mac.Driver{
+	if err := app.Run(&mac.Driver{
 		OnRun: func() {
 			newMainWindow()
 		},
@@ -57,7 +58,10 @@ func main() {
 				newMainWindow()
 			}
 		},
-	})
+	}); err != nil {
+		fmt.Printf("[app] %v\n", err)
+		os.Exit(1)
+	}
 }
 
 func newMainWindow() {
