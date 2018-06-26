@@ -3,16 +3,14 @@ package play
 import (
 	"log"
 	"os"
-	"time"
 
-	"github.com/faiface/beep/mp3"
 	id3 "github.com/mikkyang/id3-go"
 	"github.com/pkg/errors"
 )
 
 // Playlist manages the playback of audio files.
 type Playlist struct {
-	*Player
+	player *Player
 
 	playing int
 	files   []string
@@ -30,8 +28,9 @@ type Tag struct {
 // New creates a new Playlist.
 func New(files []string) *Playlist {
 	p := &Playlist{
-		files: files,
-		log:   log.New(os.Stdout, "[playlist]", log.LstdFlags),
+		player: NewPlayer(nil),
+		files:  files,
+		log:    log.New(os.Stdout, "[playlist]", log.LstdFlags),
 	}
 	go p.run()
 	return p
@@ -57,7 +56,7 @@ func (p *Playlist) run() {
 
 // Done signals that we are finished with the currently playing song.
 func (p *Playlist) Done() {
-	p.Player.Done()
+	p.player.Done()
 }
 
 // Back plays the previous song.
@@ -79,15 +78,21 @@ func (p *Playlist) Next() {
 
 // IsPlaying reports the status of the Player.
 func (p *Playlist) IsPlaying() bool {
-	if p.Player == nil {
-		return false
+	return p.player.IsPlaying()
+}
+
+// TogglePause toggles the playback state.
+func (p *Playlist) TogglePause() {
+	if p.IsPlaying() {
+		p.player.Pause()
+	} else {
+		p.player.Resume()
 	}
-	return p.Player.IsPlaying()
 }
 
 // GetSamples returns the samples.
 func (p *Playlist) GetSamples() [][2]float64 {
-	return p.Player.samples
+	return p.player.GetSamples()
 }
 
 // GetTags gets the tag for the song.
@@ -100,20 +105,10 @@ func (p *Playlist) play(file string) error {
 	if err != nil {
 		return errors.Wrap(err, "opening audio file")
 	}
-	s, format, err := mp3.Decode(f)
-	if err != nil {
-		return errors.Wrap(err, "decoding mp3")
-	}
-	player, err := NewPlayer(
-		format.SampleRate,
-		format.SampleRate.N(time.Second/10),
-	)
-	if err != nil {
-		return errors.Wrap(err, "initialising player")
-	}
-	p.Player = player
-	p.Player.Play(s)
-	return nil
+	return p.player.Play(Audio{
+		ReadCloser: f,
+		Format:     MP3,
+	})
 }
 
 func (p *Playlist) setTag(file string) error {
