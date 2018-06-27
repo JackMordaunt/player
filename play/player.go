@@ -53,8 +53,8 @@ func (p *Player) Play(a Audio) error {
 	mixer.Play(beep.Seq(streamer, beep.Callback(func() {
 		p.Done()
 	})))
-	bufferSize := format.SampleRate.N(time.Millisecond*64) * 4
-	speaker, err := oto.NewPlayer(int(format.SampleRate), 2, 2, bufferSize)
+	bufferSize := format.SampleRate.N(time.Millisecond * 96)
+	speaker, err := oto.NewPlayer(int(format.SampleRate), 2, 2, bufferSize*4)
 	if err != nil {
 		return errors.Wrap(err, "initialising speaker")
 	}
