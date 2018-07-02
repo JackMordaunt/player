@@ -132,19 +132,22 @@ func (p *Player) loop(
 		default:
 			mixer.Stream(samples)
 			for ii := range samples {
-				for c := range samples[ii] {
-					val := samples[ii][c]
-					if val < -1 {
-						val = -1
+				for channel := range samples[ii] {
+					sample := samples[ii][channel]
+					if sample < -1 {
+						sample = -1
 					}
-					if val > +1 {
-						val = +1
+					if sample > +1 {
+						sample = +1
 					}
-					valInt16 := int16(val * (1<<15 - 1))
-					low := byte(valInt16)
-					high := byte(valInt16 >> 8)
-					buffer[ii*4+c*2+0] = low
-					buffer[ii*4+c*2+1] = high
+					// Pretty sure `1<<15 - 1` creates a 16 bit "space".
+					// This is so we can interpret the sample as a 16 bit, little endian, integer.
+					sampleInt16 := int16(sample * (1<<15 - 1))
+					// The speaker api requires 2 bytes per channel little endian.
+					low := byte(sampleInt16)
+					high := byte(sampleInt16 >> 8)
+					buffer[ii*4+channel*2+0] = low
+					buffer[ii*4+channel*2+1] = high
 				}
 			}
 			if _, err := speaker.Write(buffer); err != nil {
