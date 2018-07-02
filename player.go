@@ -26,7 +26,7 @@ type Player struct {
 }
 
 const (
-	fftSamples = 1024
+	fftSamples = 1 << 10
 	refresh    = 16
 )
 
