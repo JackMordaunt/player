@@ -126,9 +126,9 @@ func (p *Player) loop(
 		case <-p.done:
 			return
 		case <-p.getsamples:
-			buffer := make([][2]float64, len(samples))
-			copy(buffer, samples)
-			p.samples <- buffer
+			b := make([][2]float64, len(samples))
+			copy(b, samples)
+			p.samples <- b
 		default:
 			mixer.Stream(samples)
 			for ii := range samples {
