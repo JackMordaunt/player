@@ -1,6 +1,9 @@
 package play
 
 import (
+	"bytes"
+	"io"
+	"io/ioutil"
 	"log"
 	"os"
 
@@ -101,12 +104,12 @@ func (p *Playlist) GetTags() Tag {
 }
 
 func (p *Playlist) play(file string) error {
-	f, err := os.Open(file)
+	data, err := ioutil.ReadFile(file)
 	if err != nil {
-		return errors.Wrap(err, "opening audio file")
+		return errors.Wrap(err, "buffering audio file")
 	}
 	return p.player.Play(Audio{
-		ReadCloser: f,
+		ReadCloser: noopCloser{bytes.NewBuffer(data)},
 		Format:     MP3,
 	})
 }
@@ -122,3 +125,9 @@ func (p *Playlist) setTag(file string) error {
 	}
 	return mp3File.Close()
 }
+
+type noopCloser struct {
+	io.Reader
+}
+
+func (noopCloser) Close() error { return nil }
