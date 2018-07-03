@@ -175,8 +175,11 @@ type Audio struct {
 type Format int
 
 const (
+	// MP3 encoding.
 	MP3 Format = iota
+	// FLAC encoding.
 	FLAC
+	// WAV encoding.
 	WAV
 )
 
