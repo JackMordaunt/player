@@ -140,14 +140,8 @@ func (p *Player) loop(
 					if sample > +1 {
 						sample = +1
 					}
-					// Pretty sure `1<<15 - 1` creates a 16 bit "space".
-					// This is so we can interpret the sample as a 16 bit, little endian, integer.
-					sampleInt16 := int16(sample * (1<<15 - 1))
-					// The speaker api requires 2 bytes per channel little endian.
-					low := byte(sampleInt16)
-					high := byte(sampleInt16 >> 8)
-					buffer[ii*4+channel*2+0] = low
-					buffer[ii*4+channel*2+1] = high
+					kk := ii*4 + channel*2
+					writeSample(buffer[kk:kk+2], sample)
 				}
 			}
 			if _, err := speaker.Write(buffer); err != nil {
@@ -155,6 +149,20 @@ func (p *Player) loop(
 			}
 		}
 	}
+}
+
+const bit16UpperBound = 1<<15 - 1
+
+// writeSample writes the sample to the buffer as a little endian 16 bit integer.
+// buffer must be at least length of 2.
+func writeSample(buffer []byte, sample float64) {
+	writeInt16(buffer, int16(sample*bit16UpperBound))
+}
+
+// Little-endian.
+func writeInt16(buffer []byte, integer int16) {
+	buffer[0] = byte(integer >> 0)
+	buffer[1] = byte(integer >> 8)
 }
 
 // Audio is a stream of bytes containing encoded audio.
